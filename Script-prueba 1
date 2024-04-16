@@ -46,18 +46,10 @@ rm "$response_file" >/dev/null 2>&1
 
 
 #############################################################################################################
-
-#De forma automatica:
 #!/bin/bash
 
-# Ruta del archivo temporal para almacenar la respuesta
-response_file="/tmp/response.txt"
-
-# Actualizar la lista de paquetes
-apt update > /dev/null
-
-# Obtener la lista de paquetes actualizables
-updates=$(apt list --upgradable 2>/dev/null | grep -v -E "(Listing|apt-utils|grep)")
+# Actualizar la lista de paquetes y obtener la lista de paquetes actualizables
+updates=$(apt update > /dev/null && apt list --upgradable 2>/dev/null | grep -v -E "(Listing|apt-utils|grep)")
 
 # Comprobar si hay actualizaciones disponibles
 if [ -z "$updates" ]; then
@@ -65,23 +57,22 @@ if [ -z "$updates" ]; then
 else
     echo "Hay actualizaciones pendientes de los paquetes:"
     echo "$updates"
-fi
-
-# Enviar correo electrónico a root
-echo "Actualización de APT:
-$updates" | mail -s "Informe de actualización de APT" root
-
-# Leer la respuesta del usuario desde el correo electrónico
-echo "Por favor, responda al correo electrónico con 'yes' o 'no' y luego presione Ctrl+D para enviar."
-cat > "$response_file"
-
-# Procesar la respuesta del usuario
-response=$(cat "$response_file" | tr -d '\n' | tr '[:upper:]' '[:lower:]')
-
-# Si el usuario responde 'yes', proceder con la actualización
-if [ "$response" = "yes" ]; then
+    
+    # Realizar actualización automática
     apt upgrade -y
+    
+    # Enviar correo electrónico a root después de la actualización
+    mail -s "Informe de actualización de APT" root <<EOF
+Las siguientes actualizaciones de APT se han realizado correctamente:
+
+$updates
+EOF
 fi
 
-# Eliminar el archivo temporal de respuesta
-rm "$response_file" >/dev/null 2>&1
+# Enviar correo electrónico a root antes de la actualización
+mail -s "Informe de actualización de APT" root <<EOF
+Las siguientes actualizaciones de APT están pendientes:
+
+$updates
+EOF
+
