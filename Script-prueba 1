@@ -15,10 +15,8 @@ else
 fi
 
 # Enviar correo electrónico a root
-mail -s "Informe de actualización de APT" root <<EOF
-Actualización de APT:
-$updates
-EOF
+echo "Actualización de APT:
+$updates" | mail -s "Informe de actualización de APT" root
 
 # Leer la respuesta del usuario desde el correo electrónico
 response=$(mail -p -f /var/mail/root)
@@ -27,6 +25,7 @@ response=$(mail -p -f /var/mail/root)
 if echo "$response" | grep -qi "yes"; then
     apt upgrade -y
 fi
+
 
 #mediante cron. Puedes agregarlo a la lista de tareas cron con el comando crontab -e y añadiendo esta linea:
 
