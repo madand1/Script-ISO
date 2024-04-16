@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Ruta del archivo temporal para almacenar la respuesta
+response_file="/tmp/response.txt"
+
 # Actualizar la lista de paquetes
 apt update > /dev/null
 
@@ -19,16 +22,20 @@ echo "Actualización de APT:
 $updates" | mail -s "Informe de actualización de APT" root
 
 # Leer la respuesta del usuario desde el correo electrónico
-response=$(mail -p -f /var/mail/root)
+echo "Por favor, responda al correo electrónico con 'yes' o 'no' y luego presione Ctrl+D para enviar."
+cat > "$response_file"
+
+# Procesar la respuesta del usuario
+response=$(cat "$response_file" | tr -d '\n' | tr '[:upper:]' '[:lower:]')
 
 # Si el usuario responde 'yes', proceder con la actualización
-if echo "$response" | grep -qi "yes"; then
+if [ "$response" = "yes" ]; then
     apt upgrade -y
 fi
-mail: invalid option -- 'p'
-usage: mail [-dEIinv] [-a header] [-b bcc-addr] [-c cc-addr] [-r from-addr] [-s subject] [--] to-addr ...
-       mail [-dEIiNnv] -f [name]
-       mail [-dEIiNnv] [-u user]
+
+# Eliminar el archivo temporal de respuesta
+rm "$response_file" >/dev/null 2>&1
+
 
 
 #mediante cron. Puedes agregarlo a la lista de tareas cron con el comando crontab -e y añadiendo esta linea:
