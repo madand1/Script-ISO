@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# Actualizar la lista de paquetes
+apt update > /dev/null
+
+# Obtener la lista de paquetes actualizables
+updates=$(apt list --upgradable 2>/dev/null | grep -v -E "(Listing|apt-utils|grep)")
+
+# Comprobar si hay actualizaciones disponibles
+if [ -z "$updates" ]; then
+    echo "No hay actualizaciones disponibles."
+else
+    echo "Hay actualizaciones pendientes de los paquetes:"
+    echo "$updates"
+fi
+
+# Enviar correo electrónico a root
+mail -s "Informe de actualización de APT" root <<EOF
+Actualización de APT:
+$updates
+EOF
+
+# Leer la respuesta del usuario desde el correo electrónico
+response=$(mail -p -f /var/mail/root)
+
+# Si el usuario responde 'yes', proceder con la actualización
+if echo "$response" | grep -qi "yes"; then
+    apt upgrade -y
+fi
+
+#mediante cron. Puedes agregarlo a la lista de tareas cron con el comando crontab -e y añadiendo esta linea:
+
+0 2 * * * /ruta/al/script.sh
