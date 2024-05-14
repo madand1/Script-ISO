@@ -1,7 +1,8 @@
-#!/bin/bash 
+#!/usr/bin/env bash 
 #Este script esta diseñado por los alumnos del ciclo de Grado Superior de ASIR de primero año, Andres Morales
 #y Alejandro Medina, el cual hace que cuando se ejecuta actualize los paquetes
-
+#hacer referencia a variables en vez de google.com 
+#Poner el nombre de las funciones en español
 
 
 # Función para mostrar un mensaje de error y salir
@@ -75,5 +76,8 @@ check_internet_connection
 
 # Ejecutar la actualización dependiendo del sistema operativo
 update_system "$os_id"
+
+
+
 
 
