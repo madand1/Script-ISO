@@ -1,4 +1,8 @@
-#!/usr/bin/bash
+#!/bin/bash 
+#Este script esta diseñado por los alumnos del ciclo de Grado Superior de ASIR de primero año, Andres Morales
+#y Alejandro Medina, el cual hace que cuando se ejecuta actualize los paquetes
+
+
 
 # Función para mostrar un mensaje de error y salir
 error_exit() {
@@ -27,14 +31,18 @@ update_system() {
                 echo "Hay actualizaciones pendientes de los paquetes:"
                 echo "$updates"
                 apt upgrade -y
-                mail -s "Informe de actualización de APT" root <<EOF
+                if [ $? -eq 0 ]; then
+                    mail -s "Informe de actualización de APT" root <<EOF
 Las siguientes actualizaciones de APT se han realizado correctamente:
 
 $updates
 EOF
+                else
+                    error_exit "No se pudieron aplicar todas las actualizaciones de APT."
+                fi
             fi
             ;;
-        "centos")
+        "centos" | "rhel" | "redhat")
             updates=$(yum check-update 2>/dev/null)
             if [ -z "$updates" ]; then
                 echo "No hay actualizaciones disponibles."
@@ -42,11 +50,15 @@ EOF
                 echo "Hay actualizaciones pendientes de los paquetes:"
                 echo "$updates"
                 yum update -y
-                mail -s "Informe de actualización de YUM" root <<EOF
+                if [ $? -eq 0 ]; then
+                    mail -s "Informe de actualización de YUM" root <<EOF
 Las siguientes actualizaciones de YUM se han realizado correctamente:
 
 $updates
 EOF
+                else
+                    error_exit "No se pudieron aplicar todas las actualizaciones de YUM."
+                fi
             fi
             ;;
         *)
@@ -55,12 +67,13 @@ EOF
     esac
 }
 
-# Verificar la conexión a Internet
-check_internet_connection
-
 # Obtener el ID del sistema operativo desde /etc/os-release
 os_id=$(awk -F'=' '/^ID=/{print $2}' /etc/os-release | tr -d '"')
 
+# Verificar conexión a Internet antes de continuar
+check_internet_connection
+
 # Ejecutar la actualización dependiendo del sistema operativo
 update_system "$os_id"
+
 
