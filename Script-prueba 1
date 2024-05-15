@@ -1,83 +1,76 @@
-#!/usr/bin/env bash 
-#Este script esta diseñado por los alumnos del ciclo de Grado Superior de ASIR de primero año, Andres Morales
-#y Alejandro Medina, el cual hace que cuando se ejecuta actualize los paquetes
-#hacer referencia a variables en vez de google.com 
-#Poner el nombre de las funciones en español
-
+#!/usr/bin/env bash
+# Este script está diseñado por los alumnos del ciclo de Grado Superior de ASIR de primer año, Andrés Morales y Alejandro Medina,
+# el cual hace que cuando se ejecuta actualize los paquetes
+# hacer referencia a variables en vez de google.com
 
 # Función para mostrar un mensaje de error y salir
-error_exit() {
+salir_con_error() {
     echo "$1" >&2
     exit 1
 }
 
 # Función para verificar la conexión a Internet
-check_internet_connection() {
+verificar_conexion_internet() {
     ping -c 1 google.com > /dev/null 2>&1
     if [ $? -eq 0 ]; then
         echo "Conexión a Internet disponible."
     else
-        error_exit "No hay conexión a Internet."
+        salir_con_error "No hay conexión a Internet."
     fi
 }
 
 # Función para realizar la actualización según el sistema operativo
-update_system() {
+actualizar_sistema() {
     case $1 in
         "ubuntu" | "debian")
-            updates=$(apt update > /dev/null && apt list --upgradable 2>/dev/null | grep -v -E "(Listing|apt-utils|grep)")
-            if [ -z "$updates" ]; then
+            actualizaciones=$(apt update > /dev/null && apt list --upgradable 2>/dev/null | grep -v -E "(Listing|apt-utils|grep)")
+            if [ -z "$actualizaciones" ]; then
                 echo "No hay actualizaciones disponibles."
             else
                 echo "Hay actualizaciones pendientes de los paquetes:"
-                echo "$updates"
+                echo "$actualizaciones"
                 apt upgrade -y
                 if [ $? -eq 0 ]; then
                     mail -s "Informe de actualización de APT" root <<EOF
 Las siguientes actualizaciones de APT se han realizado correctamente:
 
-$updates
+$actualizaciones
 EOF
                 else
-                    error_exit "No se pudieron aplicar todas las actualizaciones de APT."
+                    salir_con_error "No se pudieron aplicar todas las actualizaciones de APT."
                 fi
             fi
             ;;
         "centos" | "rhel" | "redhat")
-            updates=$(yum check-update 2>/dev/null)
-            if [ -z "$updates" ]; then
+            actualizaciones=$(yum check-update 2>/dev/null)
+            if [ -z "$actualizaciones" ]; then
                 echo "No hay actualizaciones disponibles."
             else
                 echo "Hay actualizaciones pendientes de los paquetes:"
-                echo "$updates"
+                echo "$actualizaciones"
                 yum update -y
                 if [ $? -eq 0 ]; then
                     mail -s "Informe de actualización de YUM" root <<EOF
 Las siguientes actualizaciones de YUM se han realizado correctamente:
 
-$updates
+$actualizaciones
 EOF
                 else
-                    error_exit "No se pudieron aplicar todas las actualizaciones de YUM."
+                    salir_con_error "No se pudieron aplicar todas las actualizaciones de YUM."
                 fi
             fi
             ;;
         *)
-            error_exit "El sistema operativo no es compatible. No se puede realizar la actualización."
+            salir_con_error "El sistema operativo no es compatible. No se puede realizar la actualización."
             ;;
     esac
 }
 
 # Obtener el ID del sistema operativo desde /etc/os-release
-os_id=$(awk -F'=' '/^ID=/{print $2}' /etc/os-release | tr -d '"')
+id_sistema=$(awk -F'=' '/^ID=/{print $2}' /etc/os-release | tr -d '"')
 
 # Verificar conexión a Internet antes de continuar
-check_internet_connection
+verificar_conexion_internet
 
 # Ejecutar la actualización dependiendo del sistema operativo
-update_system "$os_id"
-
-
-
-
-
+actualizar_sistema "$id_sistema"
