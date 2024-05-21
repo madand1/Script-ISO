@@ -6,7 +6,7 @@ URL_VERIFICACION="google.com"
 # Mostrar los comentarios iniciales cuando se ejecuta el script
 echo "# Este script está diseñado por los alumnos del ciclo de Grado Superior de ASIR de primer año, Andrés Morales y Alejandro Medina,"
 echo "# el cual hace que cuando se ejecuta actualize los paquetes"
-echo "# hacer referencia a variables en vez de google.com"
+
 
 # Función para mostrar un mensaje de error y salir
 salir_con_error() {
