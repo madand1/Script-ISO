@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
-# COmentario --> de quienes lo hemos hecho:
+
+# Variables
+URL_VERIFICACION="google.com"
+
+# Mostrar los comentarios iniciales cuando se ejecuta el script
 echo "# Este script está diseñado por los alumnos del ciclo de Grado Superior de ASIR de primer año, Andrés Morales y Alejandro Medina,"
 echo "# el cual hace que cuando se ejecuta actualize los paquetes"
 echo "# hacer referencia a variables en vez de google.com"
@@ -12,11 +16,20 @@ salir_con_error() {
 
 # Función para verificar la conexión a Internet
 verificar_conexion_internet() {
-    ping -c 1 google.com > /dev/null 2>&1
+    ping -c 1 $URL_VERIFICACION > /dev/null 2>&1
     if [ $? -eq 0 ]; then
         echo "Conexión a Internet disponible."
     else
         salir_con_error "No hay conexión a Internet."
+    fi
+}
+
+# Función para enviar correo si el comando 'mail' está disponible
+enviar_correo() {
+    if command -v mail > /dev/null; then
+        echo "$2" | mail -s "$1" root
+    else
+        echo "El comando 'mail' no está instalado. No se puede enviar el informe por correo."
     fi
 }
 
@@ -32,11 +45,7 @@ actualizar_sistema() {
                 echo "$actualizaciones"
                 apt upgrade -y
                 if [ $? -eq 0 ]; then
-                    mail -s "Informe de actualización de APT" root <<EOF
-Las siguientes actualizaciones de APT se han realizado correctamente:
-
-$actualizaciones
-EOF
+                    enviar_correo "Informe de actualización de APT" "Las siguientes actualizaciones de APT se han realizado correctamente:\n\n$actualizaciones"
                 else
                     salir_con_error "No se pudieron aplicar todas las actualizaciones de APT."
                 fi
@@ -51,11 +60,7 @@ EOF
                 echo "$actualizaciones"
                 yum update -y
                 if [ $? -eq 0 ]; then
-                    mail -s "Informe de actualización de YUM" root <<EOF
-Las siguientes actualizaciones de YUM se han realizado correctamente:
-
-$actualizaciones
-EOF
+                    enviar_correo "Informe de actualización de YUM" "Las siguientes actualizaciones de YUM se han realizado correctamente:\n\n$actualizaciones"
                 else
                     salir_con_error "No se pudieron aplicar todas las actualizaciones de YUM."
                 fi
